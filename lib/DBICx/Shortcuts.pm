@@ -170,7 +170,7 @@ L<"connect_info()"> information to connect.
 
 This method is not to be called directly, but to be defined by your own shortcut class.
 
-It must return the parameters that L<DBIx::Shortcuts> must use in the call to L<connect()|DBIx::Class::Schema/connect> to create the schema object.
+It must return the parameters that L<DBICx::Shortcuts> must use in the call to L<connect()|DBIx::Class::Schema/connect> to create the schema object.
 
 
 =head1 DIAGNOSTICS
