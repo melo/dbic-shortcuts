@@ -39,6 +39,9 @@ sub setup {
 
 sub schema {
   my $class = shift;
+  
+  croak("Class '$class' did not call 'setup()'")
+    unless exists $schemas{$class};
 
   my $info = $schemas{$class};
   my $schema = $info->{schema};

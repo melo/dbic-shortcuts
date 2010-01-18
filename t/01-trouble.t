@@ -7,6 +7,10 @@ use Test::More;
 use Test::Exception;
 use S2;
 
+throws_ok sub { DBICx::Shortcuts->schema },
+  qr/Class 'DBICx::Shortcuts' did not call 'setup[(][)]'/,
+  'Needs to call setup() first';
+
 throws_ok sub { DBICx::Shortcuts->connect_info },
   qr/Class 'DBICx::Shortcuts' needs to override 'connect_info[(][)]'/,
   'The connect_info() method dies by default';
