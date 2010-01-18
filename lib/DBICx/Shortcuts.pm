@@ -2,6 +2,7 @@ package DBICx::Shortcuts;
 
 use strict;
 use warnings;
+use Carp qw( croak );
 
 my %schemas;
 
@@ -18,7 +19,7 @@ sub setup {
     $method =~ s/([a-z])([A-Z])/${1}_$2/g;
     $method = lc($method);
     
-    die "Shortcut failed, '$method' already defined in '$class', "
+    croak("Shortcut failed, '$method' already defined in '$class', ")
       if $class->can($method);
     
     no strict 'refs';
@@ -48,7 +49,7 @@ sub schema {
 }
 
 sub connect_info {
-  die "Class '$_[0]' needs to override 'connect_info()', ";
+  croak("Class '$_[0]' needs to override 'connect_info()', ");
 }
 
 1;
