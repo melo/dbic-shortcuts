@@ -44,7 +44,7 @@ sub setup {
 }
 
 sub schema {
-  my $class = shift;
+  my ($class) = @_;
   
   croak("Class '$class' did not call 'setup()'")
     unless exists $schemas{$class};
@@ -53,7 +53,7 @@ sub schema {
   my $schema = $info->{schema};
   return $schema if $schema;
 
-  my @connect_args = $class->connect_info(@_);
+  my @connect_args = $class->connect_info();
   return $info->{schema} = $info->{class}->connect(@connect_args);
 }
 
