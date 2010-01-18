@@ -13,11 +13,17 @@ sub setup {
   die if $@;
   my $schema = $schema_class->connect;
   
-  for my $source ($schema->sources) {
-    my $method = $source;
-    $method =~ s/.+::(.+)$/$1/; ## deal with nested sources
-    $method =~ s/([a-z])([A-Z])/${1}_$2/g;
-    $method = lc($method);
+  SOURCE: for my $source ($schema->sources) {
+    my $info = $schema->source($source)->source_info;
+    next SOURCE if exists $info->{skip_shortcut} && $info->{skip_shortcut};
+
+    my $method = $info->{shortcut};
+    if (!$method) {
+      $method = $source;
+      $method =~ s/.+::(.+)$/$1/; ## deal with nested sources
+      $method =~ s/([a-z])([A-Z])/${1}_$2/g;
+      $method = lc($method);
+    }
     
     croak("Shortcut failed, '$method' already defined in '$class', ")
       if $class->can($method);
