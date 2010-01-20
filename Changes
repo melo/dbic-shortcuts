@@ -1,5 +1,8 @@
 # Changes for DBIx-Shortcuts
 
+0.003 Wed 20 Jan 2010 20:58:36 UTC
+     * Skip 05-shortcuts.t if we don't have a SQL::Translator installed
+
 0.002 Ter 19 Jan 2010 07:45:32 UTC
      * Added missing dependency on parent: older parents don't have it
 
