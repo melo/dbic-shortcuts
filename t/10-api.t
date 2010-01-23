@@ -7,8 +7,10 @@ use Test::More;
 use Test::Exception;
 use S3;
 
-eval "require DBD::SQLite";
-plan skip_all => 'API tests require DBD::SQLite, ' if $@;
+for my $package ('DBD::SQLite', 'SQL::Translator') {
+  eval "require $package";
+  plan skip_all => "API tests require $package, " if $@;
+}
 
 lives_ok sub { S3->schema->deploy }, 'Schema deployed sucessfuly';
 
