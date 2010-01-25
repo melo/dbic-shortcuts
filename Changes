@@ -1,5 +1,11 @@
 # Changes for DBIx-Shortcuts
 
+0.005 Mon Jan 25 16:55:40 UTC 2010
+     * Added option to create a set of shortcut methods for
+       DBIx::Class::Schema
+     * set DBIC_NO_VERSION_CHECK to true before calling connect(),
+       disable DBIx::Class::Versioned warnings
+
 0.004 Sat Jan 23 11:22:20 UTC 2010
      * Skip 10-api.t if we don't have a SQL::Translator installed
 
