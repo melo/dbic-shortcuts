@@ -11,6 +11,7 @@ sub setup {
 
   eval "require $schema_class";
   die if $@;
+  local $ENV{DBIC_NO_VERSION_CHECK} = 1;
   my $schema = $schema_class->connect;
   
   SOURCE: for my $source ($schema->sources) {

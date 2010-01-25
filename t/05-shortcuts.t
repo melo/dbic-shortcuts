@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use lib 't/tlib';
 use Test::More;
+BEGIN { $ENV{DBIC_NO_VERSION_CHECK} = 42 }
 use S1;
 
 eval "require SQL::Translator";
@@ -17,5 +18,8 @@ can_ok('S1', qw( authors my_books ));
 ok(!S1->can('printings'));
 
 is(S1->schema, $schema, 'Second call to schema, same object returned');
+
+is($ENV{DBIC_NO_VERSION_CHECK},
+  42, 'ENV DBIC_NO_VERSION_CHECK is saved in the call to setup');
 
 done_testing();
