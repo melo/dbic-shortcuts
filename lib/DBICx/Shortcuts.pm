@@ -7,7 +7,7 @@ use Carp qw( croak );
 my %schemas;
 
 sub setup {
-  my ($class, $schema_class) = @_;
+  my ($class, $schema_class, @methods) = @_;
 
   eval "require $schema_class";
   die if $@;
@@ -39,6 +39,12 @@ sub setup {
     };
   }
   
+  ## Enable set of schema shortcuts
+  for my $meth (@methods) {
+    no strict 'refs';
+    *{__PACKAGE__ . "::$meth"} = sub { return shift->schema->$meth(@_) };
+  }
+
   $schemas{$class} = { class => $schema_class };
   
   return;
@@ -79,6 +85,9 @@ DBICx::Shortcuts - Setup a class with shortcut methods to the sources of a DBIx:
   use parent 'DBICx::Shortcuts';
   
   __PACKAGE__->setup('Class::Of::Your::Schema');
+  
+  ## Alternate version, this one import txn_do from DBIx::Class::Schema
+  ## __PACKAGE__->setup('Class::Of::Your::Schema', 'txn_do');
   
   sub connect_info {
     ## return DBIx::Class::Schema::connect() arguments
@@ -140,9 +149,15 @@ and have it return all the required connect() parameters.
 
     package MyShortcutsClass;
     __PACKAGE__->setup('MySchemaClass');
+    ## or
+    __PACKAGE__->setup('MySchemaClass', 'txn_do', 'storage', $other_methods);
 
 The L</setup()> accepts your schema class as a parameter, loads it, and
 creates a shortcut method for each source found inside.
+
+Optionally you can follow with a list of methods that you want to create
+as shortcuts to the same named method in
+L<DBIx::Class::Schema|DBIx::Class::Schema>.
 
 You can control some aspects of the shortcut creation using the
 <source_info()|DBIx::Class::ResultSource/source_info> ResultSource metadata hashref.

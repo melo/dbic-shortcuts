@@ -14,8 +14,11 @@ my $schema = S1->schema;
 isa_ok($schema, 'DBIx::Class::Schema', 'Got a valid DBIx::Class::Schema');
 is(ref($schema), 'Schema', '... and of the expected type');
 
-can_ok('S1', qw( authors my_books ));
+can_ok('S1', qw( authors my_books txn_do storage ));
 ok(!S1->can('printings'));
+
+isa_ok(S1->storage, 'DBIx::Class::Storage', 'Our storage shortcut
+returns the expected object');
 
 is(S1->schema, $schema, 'Second call to schema, same object returned');
 
