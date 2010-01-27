@@ -16,6 +16,7 @@ is(ref($schema), 'Schema', '... and of the expected type');
 
 can_ok('S1', qw( authors my_books txn_do storage ));
 ok(!S1->can('printings'));
+ok(!S1->can('mecenas'));
 
 isa_ok(S1->storage, 'DBIx::Class::Storage', 'Our storage shortcut
 returns the expected object');
