@@ -1,5 +1,8 @@
 # Changes for DBIx-Shortcuts
 
+0.006 Wed Jan 27 16:17:34 UTC 2010
+     * Use shortcut => undef to disable shortcut creation
+
 0.005 Mon Jan 25 16:55:40 UTC 2010
      * Added option to create a set of shortcut methods for
        DBIx::Class::Schema
