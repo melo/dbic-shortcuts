@@ -39,6 +39,8 @@ sub setup {
       
       return $rs unless @_;
       return $rs->find(@_) if defined($_[0]) && !ref($_[0]);
+      return $rs->find(@_[1 .. $#_], {key => ${$_[0]}})
+        if defined($_[0]) && ref($_[0]) eq 'SCALAR';
       return $rs->search(@_);
     };
   }
@@ -107,6 +109,9 @@ DBICx::Shortcuts - Setup a class with shortcut methods to the sources of a DBIx:
   $book = S->books->create({ ... });
   
   # With first argument as a defined non-ref, passes @_ to find()
+  
+  # With first argument as a ScalarRef, uses a unique constraint
+  $book = S->book(\'isbn_key', '9123123432123');
   $book = S->books(42);  ## 42 is the ID of the book
   
   # All other cases, calls search()
@@ -129,13 +134,17 @@ the real Schema class using the L<"setup()"> method.
 For each source defined in your schema class, a method will be created
 in the shortcut class.
 
-This method can be used in three ways.
+This method can be used in four ways.
 
 If called without parameters, the shortcut method will return a
 ResultSet for the source. Usefull to call create().
 
 If called with parameters where the first is not a reference, it calls
 find(). Usefull to fetch a row based on the primary key.
+
+If called with parameters where the first is a scalarRef, we assume it
+to be the name of the unique constraint to use, and the rest of the
+arguments to be the required values for that constraint.
 
 In all other cases, it calls search() and returns the resultset.
 

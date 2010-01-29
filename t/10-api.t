@@ -47,4 +47,10 @@ is(
   'Search without contitions shortcut works'
 );
 
+## Use unique keys with find
+my $a1 = S3->authors->create({ id => 1, oid => 10});
+
+is($a1->id, S3->authors(1)->id, 'Find by primary key works');
+is($a1->id, S3->authors(\'oid_un', 10)->id, 'Find by unique key works');
+
 done_testing();

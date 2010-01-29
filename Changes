@@ -1,5 +1,8 @@
 # Changes for DBIx-Shortcuts
 
+0.007 
+     * Add support for find by unique key
+
 0.006 Wed Jan 27 16:17:34 UTC 2010
      * Use shortcut => undef to disable shortcut creation
 
