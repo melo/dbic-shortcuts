@@ -1,6 +1,6 @@
 # Changes for DBIx-Shortcuts
 
-0.007 
+0.007 Fri Jan 29 18:26:43 UTC 2010
      * Add support for find by unique key
 
 0.006 Wed Jan 27 16:17:34 UTC 2010
