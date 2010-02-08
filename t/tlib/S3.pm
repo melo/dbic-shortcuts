@@ -6,11 +6,16 @@ __PACKAGE__->setup('Schema');
 
 my $tmpname = tmpnam();
 sub connect_info {
-  return ("dbi:SQLite:$tmpname");
+  my ($self, $extra) = @_;
+
+  my $name = $tmpname;
+  $name .= "-$extra" if $extra;
+  
+  return ("dbi:SQLite:$name") ;
 }
 
-END {
-  unlink($tmpname) if $tmpname;
-}
+# END {
+#   unlink($tmpname) if $tmpname;
+# }
 
 1;

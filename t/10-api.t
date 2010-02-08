@@ -12,45 +12,47 @@ for my $package ('DBD::SQLite', 'SQL::Translator') {
   plan skip_all => "API tests require $package, " if $@;
 }
 
-lives_ok sub { S3->schema->deploy }, 'Schema deployed sucessfuly';
+for my $db ('S3', S3->new('a'), S3->new('b')) {
+  lives_ok sub { $db->schema->deploy }, 'Schema deployed sucessfuly';
 
-## Basic API
-my $rs = S3->my_books;
-isa_ok($rs, 'DBIx::Class::ResultSet', 'Got the expected resultset');
+  ## Basic API
+  my $rs = $db->my_books;
+  isa_ok($rs, 'DBIx::Class::ResultSet', 'Got the expected resultset');
 
-my $not_found = S3->my_books(-1);
-ok(!defined $not_found, 'Find for non-existing ID, undef');
+  my $not_found = $db->my_books(-1);
+  ok(!defined $not_found, 'Find for non-existing ID, undef');
 
-$rs = S3->my_books({id => 2});
-isa_ok($rs, 'DBIx::Class::ResultSet', 'Got a resultset');
+  $rs = $db->my_books({id => 2});
+  isa_ok($rs, 'DBIx::Class::ResultSet', 'Got a resultset');
 
 
-## Now with real data
-my $love = S3->my_books->create({title => 'Love your Catalyst'});
-ok($love, 'Got something');
-isa_ok($love, 'Schema::Result::MyBooks', '... and it seems a MyBook');
+  ## Now with real data
+  my $love = $db->my_books->create({title => 'Love your Catalyst'});
+  ok($love, 'Got something');
+  isa_ok($love, 'Schema::Result::MyBooks', '... and it seems a MyBook');
 
-my $hate = S3->my_books->create({title => 'Hate ponies'});
-ok($hate, 'Second book ok');
-isa_ok($hate, 'Schema::Result::MyBooks', '... proper class at least');
+  my $hate = $db->my_books->create({title => 'Hate ponies'});
+  ok($hate, 'Second book ok');
+  isa_ok($hate, 'Schema::Result::MyBooks', '... proper class at least');
 
-is($hate->title, S3->my_books($hate->id)->title, 'Find shortcut works');
-is(
-  $hate->title,
-  S3->my_books({id => $hate->id})->first->title,
-  'Search shortcut works'
-);
+  is($hate->title, $db->my_books($hate->id)->title, 'Find shortcut works');
+  is(
+    $hate->title,
+    $db->my_books({id => $hate->id})->first->title,
+    'Search shortcut works'
+  );
 
-is(
-  $love->title,
-  S3->my_books(undef, { sort => 'title DESC' })->first->title,
-  'Search without contitions shortcut works'
-);
+  is(
+    $love->title,
+    $db->my_books(undef, { sort => 'title DESC' })->first->title,
+    'Search without contitions shortcut works'
+  );
 
-## Use unique keys with find
-my $a1 = S3->authors->create({ id => 1, oid => 10});
+  ## Use unique keys with find
+  my $a1 = $db->authors->create({ id => 1, oid => 10});
 
-is($a1->id, S3->authors(1)->id, 'Find by primary key works');
-is($a1->id, S3->authors(\'oid_un', 10)->id, 'Find by unique key works');
+  is($a1->id, $db->authors(1)->id, 'Find by primary key works');
+  is($a1->id, $db->authors(\'oid_un', 10)->id, 'Find by unique key works');
+}
 
 done_testing();

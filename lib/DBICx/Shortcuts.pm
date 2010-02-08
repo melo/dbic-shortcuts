@@ -6,6 +6,12 @@ use Carp qw( croak );
 
 my %schemas;
 
+sub new {
+  my ($class, @connect_info) = @_;
+
+  return bless {connect_info => \@connect_info,}, $class;
+}
+
 sub setup {
   my ($class, $schema_class, @methods) = @_;
 
@@ -35,10 +41,22 @@ SOURCE: for my $source ($schema->sources) {
 
     no strict 'refs';
     *{__PACKAGE__ . "::$method"} = sub {
-      my $rs = shift->schema->resultset($source);
+      my $self = shift;
 
-      ## No arguments, return empty result set;
-      return $rs unless @_;
+      ## Old style singleton support
+      $self = $schemas{$self}{instance} unless ref($self);
+      my $schema = $self->schema;
+
+      ## No arguments, return empty result set
+      ## Returning a cached RS directly to the outside could be
+      ## used with side-effects
+      return $schema->resultset($source) unless @_;
+
+      ## Cache resultset objects
+      my $rs = $self->{rs}{$method};
+      unless ($rs) {
+        $rs = $self->{rs}{$method} = $schema->resultset($source);
+      }
 
       ## first argument not a reference, assume find by PK
       return $rs->find(@_) if defined($_[0]) && !ref($_[0]);
@@ -59,27 +77,41 @@ SOURCE: for my $source ($schema->sources) {
     *{__PACKAGE__ . "::$meth"} = sub { return shift->schema->$meth(@_) };
   }
 
-  $schemas{$class} = {class => $schema_class};
+  ## Keep our singleton support alive
+  $schemas{$class} = {
+    schema_class => $schema_class,
+    instance     => $class->new,
+  };
 
   return;
 }
 
 sub schema {
-  my ($class) = @_;
+  my ($self) = @_;
 
-  croak("Class '$class' did not call 'setup()'")
+  ## Make sure it is a proper Shortcut class
+  my $class = ref($self) || $self;
+  croak("Class '$self' did not call 'setup()'")
     unless exists $schemas{$class};
 
-  my $info   = $schemas{$class};
-  my $schema = $info->{schema};
-  return $schema if $schema;
+  ## Our schema information
+  my $info = $schemas{$class};
 
-  my @connect_args = $class->connect_info();
-  return $info->{schema} = $info->{class}->connect(@connect_args);
+  ## Old style singleton support
+  if (!ref($self)) {
+    $self = $info->{instance};
+  }
+
+  ## Return cached schema
+  return $self->{schema} if $self->{schema};
+
+  my $ci = $self->{connect_info};
+  return $self->{schema} =
+    $info->{schema_class}->connect($self->connect_info(@$ci));
 }
 
 sub connect_info {
-  croak("Class '$_[0]' needs to override 'connect_info()', ");
+  croak("Class '".ref($_[0])."' needs to override 'connect_info()', ");
 }
 
 1;
