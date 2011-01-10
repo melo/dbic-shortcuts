@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use lib 't/tlib';
 use Test::More;
+use Test::Deep;
 BEGIN { $ENV{DBIC_NO_VERSION_CHECK} = 42 }
 use S1;
 
@@ -25,5 +26,9 @@ is(S1->schema, $schema, 'Second call to schema, same object returned');
 
 is($ENV{DBIC_NO_VERSION_CHECK},
   42, 'ENV DBIC_NO_VERSION_CHECK is saved in the call to setup');
+
+my $source = S1->source('authors');
+is($source->source_name, 'MyAuthors', 'Proper source_name');
+cmp_deeply([$source->columns], [qw(id oid)], '... and expected columns');
 
 done_testing();

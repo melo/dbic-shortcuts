@@ -2,7 +2,7 @@ package DBICx::Shortcuts;
 
 use strict;
 use warnings;
-use Carp qw( croak );
+use Carp qw( croak confess );
 
 my %schemas;
 
@@ -20,6 +20,7 @@ sub setup {
   local $ENV{DBIC_NO_VERSION_CHECK} = 1;
   my $schema = $schema_class->connect;
 
+  my %sources;
 SOURCE: for my $source ($schema->sources) {
     my $info = $schema->source($source)->source_info;
     next SOURCE if exists $info->{skip_shortcut} && $info->{skip_shortcut};
@@ -69,6 +70,9 @@ SOURCE: for my $source ($schema->sources) {
       ## otherwise, its a search
       return $rs->search(@_);
     };
+
+    $sources{$method} = $source;
+    $sources{$source} = $source;
   }
 
   ## Enable set of schema shortcuts
@@ -81,6 +85,7 @@ SOURCE: for my $source ($schema->sources) {
   $schemas{$class} = {
     schema_class => $schema_class,
     instance     => $class->new,
+    sources      => \%sources,
   };
 
   return;
@@ -108,6 +113,16 @@ sub schema {
   my $ci = $self->{connect_info};
   return $self->{schema} =
     $info->{schema_class}->connect($self->connect_info(@$ci));
+}
+
+sub source {
+  my ($self, $source) = @_;
+  my $class = ref($self) || $self;
+
+  confess("Source '$source' unknown, ")
+    unless exists $schemas{$class}{sources}{$source};
+
+  $self->schema->source($schemas{$class}{sources}{$source});
 }
 
 sub connect_info {
