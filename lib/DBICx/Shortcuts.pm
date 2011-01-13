@@ -21,21 +21,19 @@ sub setup {
   my $schema = $schema_class->connect;
 
   my %sources;
-SOURCE: for my $source ($schema->sources) {
-    my $info = $schema->source($source)->source_info;
+SOURCE: for my $source_name ($schema->sources) {
+    my $source = $schema->source($source_name);
+    my $info   = $source->source_info;
     next SOURCE if exists $info->{skip_shortcut} && $info->{skip_shortcut};
 
     my $method;
     if (exists $info->{shortcut}) {
       $method = $info->{shortcut};
-      next SOURCE unless defined $method;
     }
     else {
-      $method = $source;
-      $method =~ s/.+::(.+)$/$1/;              ## deal with nested sources
-      $method =~ s/([a-z])([A-Z])/${1}_$2/g;
-      $method = lc($method);
+      $method = $class->build_shortcut_for_source($source);
     }
+    next SOURCE unless defined $method;
 
     croak("Shortcut failed, '$method' already defined in '$class', ")
       if $class->can($method);
@@ -51,12 +49,12 @@ SOURCE: for my $source ($schema->sources) {
       ## No arguments, return empty result set
       ## Returning a cached RS directly to the outside could be
       ## used with side-effects
-      return $schema->resultset($source) unless @_;
+      return $schema->resultset($source_name) unless @_;
 
       ## Cache resultset objects
       my $rs = $self->{rs}{$method};
       unless ($rs) {
-        $rs = $self->{rs}{$method} = $schema->resultset($source);
+        $rs = $self->{rs}{$method} = $schema->resultset($source_name);
       }
 
       ## first argument not a reference, assume find by PK
@@ -71,8 +69,8 @@ SOURCE: for my $source ($schema->sources) {
       return $rs->search(@_);
     };
 
-    $sources{$method} = $source;
-    $sources{$source} = $source;
+    $sources{$method}      = $source_name;
+    $sources{$source_name} = $source_name;
   }
 
   ## Enable set of schema shortcuts
@@ -89,6 +87,17 @@ SOURCE: for my $source ($schema->sources) {
   };
 
   return;
+}
+
+sub build_shortcut_for_source {
+  my ($class, $source) = @_;
+
+  my $method = $source->source_name;
+  $method =~ s/.+::(.+)$/$1/;              ## deal with nested sources
+  $method =~ s/([a-z])([A-Z])/${1}_$2/g;
+  $method = lc($method);
+
+  return $method;
 }
 
 sub schema {
@@ -126,7 +135,7 @@ sub source {
 }
 
 sub connect_info {
-  croak("Class '".ref($_[0])."' needs to override 'connect_info()', ");
+  croak("Class '" . ref($_[0]) . "' needs to override 'connect_info()', ");
 }
 
 1;
