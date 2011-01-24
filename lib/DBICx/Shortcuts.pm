@@ -62,8 +62,13 @@ SOURCE: for my $source_name ($schema->sources) {
 
       ## first argument is a scalar ref, assume unique constraint name,
       ## use find
-      return $rs->find(@_[1 .. $#_], {key => ${$_[0]}})
-        if defined($_[0]) && ref($_[0]) eq 'SCALAR';
+      if (defined($_[0]) && ref($_[0]) eq 'SCALAR') {
+        my $key = shift;
+        my $args = ref($_[-1]) eq 'HASH' ? pop : {};
+        $args->{key} = $$key;
+
+        return $rs->find(@_, $args);
+      }
 
       ## otherwise, its a search
       return $rs->search(@_);

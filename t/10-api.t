@@ -53,6 +53,10 @@ for my $db ('S3', S3->new('a'), S3->new('b')) {
 
   is($a1->id, $db->authors(1)->id, 'Find by primary key works');
   is($a1->id, $db->authors(\'oid_un', 10)->id, 'Find by unique key works');
+  is($db->authors(\'oid_un', 10, {})->id,
+    $a1->id, 'Find by unique key works (extra args)');
+  is($db->authors(\'oid_un', 10, {where => {id => 2}}),
+    undef, 'Find by unique key works (extra args)');
 }
 
 done_testing();
