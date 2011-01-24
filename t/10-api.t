@@ -44,12 +44,12 @@ for my $db ('S3', S3->new('a'), S3->new('b')) {
 
   is(
     $love->title,
-    $db->my_books(undef, { sort => 'title DESC' })->first->title,
+    $db->my_books(undef, {sort => 'title DESC'})->first->title,
     'Search without contitions shortcut works'
   );
 
   ## Use unique keys with find
-  my $a1 = $db->authors->create({ id => 1, oid => 10});
+  my $a1 = $db->authors->create({id => 1, oid => 10});
 
   is($a1->id, $db->authors(1)->id, 'Find by primary key works');
   is($a1->id, $db->authors(\'oid_un', 10)->id, 'Find by unique key works');

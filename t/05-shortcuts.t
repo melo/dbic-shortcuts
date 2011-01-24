@@ -19,8 +19,10 @@ can_ok('S1', qw( authors my_books txn_do storage ));
 ok(!S1->can('printings'));
 ok(!S1->can('mecenas'));
 
-isa_ok(S1->storage, 'DBIx::Class::Storage', 'Our storage shortcut
-returns the expected object');
+isa_ok(
+  S1->storage, 'DBIx::Class::Storage', 'Our storage shortcut
+returns the expected object'
+);
 
 is(S1->schema, $schema, 'Second call to schema, same object returned');
 

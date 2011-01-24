@@ -5,12 +5,12 @@ __PACKAGE__->load_components('Core');
 __PACKAGE__->table('my_books');
 __PACKAGE__->add_columns(
   id => {
-    data_type => 'INT',
-    is_nullable => 0,
+    data_type         => 'INT',
+    is_nullable       => 0,
     is_auto_increment => 1,
   },
   title => {
-    data_type => 'VARCHAR',
+    data_type   => 'VARCHAR',
     is_nullable => 0,
   },
 );
