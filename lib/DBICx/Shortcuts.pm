@@ -2,6 +2,7 @@ package DBICx::Shortcuts;
 
 use strict;
 use warnings;
+use Sub::Name;
 use Carp qw( croak confess );
 
 my %schemas;
@@ -39,7 +40,8 @@ SOURCE: for my $source_name ($schema->sources) {
       if $class->can($method);
 
     no strict 'refs';
-    *{__PACKAGE__ . "::$method"} = sub {
+    my $full_name = join('::', $class, $method);
+    *{$full_name} = subname $full_name, sub {
       my $self = shift;
 
       ## Old style singleton support
