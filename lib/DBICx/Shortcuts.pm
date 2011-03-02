@@ -3,6 +3,7 @@ package DBICx::Shortcuts;
 use strict;
 use warnings;
 use Sub::Name;
+use Package::Stash;
 use Carp qw( croak confess );
 
 my %schemas;
@@ -20,6 +21,8 @@ sub setup {
   die if $@;
   local $ENV{DBIC_NO_VERSION_CHECK} = 1;
   my $schema = $schema_class->connect;
+
+  my $stash = Package::Stash->new($class);
 
   my %sources;
 SOURCE: for my $source_name ($schema->sources) {
@@ -39,9 +42,8 @@ SOURCE: for my $source_name ($schema->sources) {
     croak("Shortcut failed, '$method' already defined in '$class', ")
       if $class->can($method);
 
-    no strict 'refs';
     my $full_name = join('::', $class, $method);
-    *{$full_name} = subname $full_name, sub {
+    $stash->add_symbol("\&$method", subname $full_name, sub {
       my $self = shift;
 
       ## Old style singleton support
@@ -74,7 +76,7 @@ SOURCE: for my $source_name ($schema->sources) {
 
       ## otherwise, its a search
       return $rs->search(@_);
-    };
+    });
 
     $sources{$method}      = $source_name;
     $sources{$source_name} = $source_name;
